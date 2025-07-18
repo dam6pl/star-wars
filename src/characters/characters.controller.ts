@@ -11,10 +11,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CharacterDto } from 'src/characters/dto/character.dto';
-import { PageOptionsDto } from 'src/common/dto/page-options.dto';
-import { PageDto } from 'src/common/dto/page.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { CharactersService } from './characters.service';
+import { CharacterDto } from './dto/character.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 

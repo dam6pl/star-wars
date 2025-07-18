@@ -12,16 +12,16 @@ export class PageDto<T> {
 
   @Expose()
   @ApiProperty({ type: Number, description: 'Number of items per page' })
-  limit: number;
+  take: number;
 
   @Expose()
   @ApiProperty({ type: Number, description: 'Total number of items' })
   total: number;
 
-  constructor(data: T[], page: number, limit: number, total: number) {
+  constructor(data: T[], page: number, take: number, total: number) {
     this.data = data;
     this.page = page;
-    this.limit = limit;
+    this.take = take;
     this.total = total;
   }
 }

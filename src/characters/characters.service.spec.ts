@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import {
   mockCharacter,
@@ -8,6 +9,8 @@ import {
   mockCreateCharacterDto,
   mockUpdateCharacterDto,
 } from '../../test/utils/mock-data';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { CharactersService } from './characters.service';
 import { Character } from './entities/character.entity';
 
@@ -59,18 +62,26 @@ describe('CharactersService', () => {
 
   describe('findAll', () => {
     it('should return paginated characters', async () => {
-      const page = 1;
-      const limit = 10;
+      const pageOptionsDto = plainToInstance(PageOptionsDto, {
+        page: 1,
+        take: 10,
+      });
+      const pageDto = plainToInstance(PageDto, {
+        data: mockCharacters,
+        total: 2,
+        page: 1,
+        take: 10,
+      });
       mockRepository.findAndCount.mockResolvedValue([mockCharacters, 2]);
 
-      const result = await service.findAll(page, limit);
+      const result = await service.findAll(pageOptionsDto);
 
       expect(repository.findAndCount).toHaveBeenCalledWith({
         skip: 0,
-        take: limit,
+        take: pageOptionsDto.take,
         order: { name: 'ASC' },
       });
-      expect(result).toEqual([mockCharacters, 2]);
+      expect(result).toEqual(pageDto);
     });
   });
 

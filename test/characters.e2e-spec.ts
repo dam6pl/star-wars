@@ -84,7 +84,7 @@ describe('CharactersController (e2e)', () => {
         ]),
         total: expect.any(Number),
         page: 1,
-        limit: 10,
+        take: 10,
       });
     });
   });
@@ -106,10 +106,10 @@ describe('CharactersController (e2e)', () => {
     });
   });
 
-  describe('PUT /characters/:id', () => {
+  describe('PATCH /characters/:id', () => {
     it('should update a character', async () => {
       const response = await request(app.getHttpServer())
-        .put(`/characters/${createdCharacterId}`)
+        .patch(`/characters/${createdCharacterId}`)
         .send(mockUpdateCharacterDto)
         .expect(200);
 
@@ -121,7 +121,7 @@ describe('CharactersController (e2e)', () => {
 
     it('should return 404 for non-existent character', async () => {
       await request(app.getHttpServer())
-        .put('/characters/999999')
+        .patch('/characters/999999')
         .send(mockUpdateCharacterDto)
         .expect(404);
     });

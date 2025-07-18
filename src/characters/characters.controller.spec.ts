@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import {
   mockCharacter,
   mockCharacters,
   mockCreateCharacterDto,
   mockUpdateCharacterDto,
 } from '../../test/utils/mock-data';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { CharactersController } from './characters.controller';
 import { CharactersService } from './characters.service';
 
@@ -52,33 +55,38 @@ describe('CharactersController', () => {
 
   describe('findAll', () => {
     it('should return paginated characters', async () => {
-      const page = 1;
-      const limit = 10;
-      mockCharactersService.findAll.mockResolvedValue([mockCharacters, 2]);
-
-      const result = await controller.findAll(page, limit);
-
-      expect(service.findAll).toHaveBeenCalledWith(page, limit);
-      expect(result).toEqual({
+      const pageOptionsDto = plainToInstance(PageOptionsDto, {
+        page: 1,
+        take: 10,
+      });
+      const pageDto = plainToInstance(PageDto, {
         data: mockCharacters,
         total: 2,
         page: 1,
-        limit: 10,
+        take: 10,
       });
+      mockCharactersService.findAll.mockResolvedValue(pageDto);
+
+      const result = await controller.findAll(pageOptionsDto);
+
+      expect(service.findAll).toHaveBeenCalledWith(pageOptionsDto);
+      expect(result).toEqual(pageDto);
     });
 
     it('should use default pagination values', async () => {
-      mockCharactersService.findAll.mockResolvedValue([mockCharacters, 2]);
-
-      const result = await controller.findAll(undefined, undefined);
-
-      expect(service.findAll).toHaveBeenCalledWith(undefined, undefined);
-      expect(result).toEqual({
+      const pageOptionsDto = plainToInstance(PageOptionsDto, {});
+      const pageDto = plainToInstance(PageDto, {
         data: mockCharacters,
         total: 2,
         page: 1,
-        limit: 10,
+        take: 10,
       });
+      mockCharactersService.findAll.mockResolvedValue(pageDto);
+
+      const result = await controller.findAll(pageOptionsDto);
+
+      expect(service.findAll).toHaveBeenCalledWith(pageOptionsDto);
+      expect(result).toEqual(pageDto);
     });
   });
 
