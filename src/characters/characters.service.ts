@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { CharacterDto } from 'src/characters/dto/character.dto';
+import { PageOptionsDto } from 'src/common/dto/page-options.dto';
+import { PageDto } from 'src/common/dto/page.dto';
 import { Repository } from 'typeorm';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -12,24 +16,35 @@ export class CharactersService {
     private charactersRepository: Repository<Character>,
   ) {}
 
-  async create(createCharacterDto: CreateCharacterDto): Promise<Character> {
-    const character = this.charactersRepository.create(createCharacterDto);
+  async findAll(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<CharacterDto>> {
+    const [characters, total] = await this.charactersRepository.findAndCount({
+      skip: pageOptionsDto.skip,
+      take: pageOptionsDto.take,
+      order: { name: 'ASC' },
+    });
 
-    return this.charactersRepository.save(character);
+    return new PageDto(
+      plainToInstance(CharacterDto, characters, {
+        excludeExtraneousValues: true,
+      }),
+      pageOptionsDto.page ?? 1,
+      pageOptionsDto.take ?? 10,
+      total,
+    );
   }
 
-  async findAll(
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<[Character[], number]> {
-    return this.charactersRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { name: 'ASC' },
+  async create(createCharacterDto: CreateCharacterDto): Promise<Character> {
+    const character = this.charactersRepository.create(createCharacterDto);
+    const createdCharacter = await this.charactersRepository.save(character);
+
+    return plainToInstance(CharacterDto, createdCharacter, {
+      excludeExtraneousValues: true,
     });
   }
 
-  async findOne(id: number): Promise<Character> {
+  async findOne(id: number): Promise<CharacterDto> {
     const character = await this.charactersRepository.findOne({
       where: { id },
     });
@@ -38,17 +53,22 @@ export class CharactersService {
       throw new NotFoundException(`Character with ID ${id} not found`);
     }
 
-    return character;
+    return plainToInstance(CharacterDto, character, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async update(
     id: number,
     updateCharacterDto: UpdateCharacterDto,
-  ): Promise<Character> {
+  ): Promise<CharacterDto> {
     const character = await this.findOne(id);
     Object.assign(character, updateCharacterDto);
+    const updatedCharacter = await this.charactersRepository.save(character);
 
-    return this.charactersRepository.save(character);
+    return plainToInstance(CharacterDto, updatedCharacter, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async remove(id: number): Promise<void> {

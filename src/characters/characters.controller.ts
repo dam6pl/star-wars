@@ -6,12 +6,14 @@ import {
   HttpCode,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CharacterDto } from 'src/characters/dto/character.dto';
+import { PageOptionsDto } from 'src/common/dto/page-options.dto';
+import { PageDto } from 'src/common/dto/page.dto';
 import { CharactersService } from './characters.service';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -23,33 +25,15 @@ export class CharactersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all characters' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({
     status: 200,
     description: 'List of characters.',
-    type: [CharacterDto],
+    type: PageDto<CharacterDto>,
   })
   async findAll(
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
-  ): Promise<{
-    data: CharacterDto[];
-    total: number;
-    page: number;
-    limit: number;
-  }> {
-    const [characters, total] = await this.charactersService.findAll(
-      page,
-      limit,
-    );
-
-    return {
-      data: characters,
-      total,
-      page: page || 1,
-      limit: limit || 10,
-    };
+    @Query() pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<CharacterDto>> {
+    return await this.charactersService.findAll(pageOptionsDto);
   }
 
   @Post()
@@ -59,10 +43,10 @@ export class CharactersController {
     description: 'The character has been successfully created.',
     type: CharacterDto,
   })
-  create(
+  async create(
     @Body() createCharacterDto: CreateCharacterDto,
   ): Promise<CharacterDto> {
-    return this.charactersService.create(createCharacterDto);
+    return await this.charactersService.create(createCharacterDto);
   }
 
   @Get(':id')
@@ -73,11 +57,11 @@ export class CharactersController {
     type: CharacterDto,
   })
   @ApiResponse({ status: 404, description: 'Character not found.' })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<CharacterDto> {
-    return this.charactersService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<CharacterDto> {
+    return await this.charactersService.findOne(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a character' })
   @ApiResponse({
     status: 200,
@@ -85,11 +69,11 @@ export class CharactersController {
     type: CharacterDto,
   })
   @ApiResponse({ status: 404, description: 'Character not found.' })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCharacterDto: UpdateCharacterDto,
   ): Promise<CharacterDto> {
-    return this.charactersService.update(id, updateCharacterDto);
+    return await this.charactersService.update(id, updateCharacterDto);
   }
 
   @Delete(':id')
@@ -100,7 +84,7 @@ export class CharactersController {
   })
   @ApiResponse({ status: 404, description: 'Character not found.' })
   @HttpCode(202)
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.charactersService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.charactersService.remove(id);
   }
 }

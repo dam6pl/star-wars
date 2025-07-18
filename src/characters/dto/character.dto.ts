@@ -1,27 +1,33 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Episode } from '../entities/character.entity';
 
 export class CharacterDto {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'The ID of the character' })
   id: number;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'The name of the character' })
   name: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'List of episodes the character appears in',
+    enum: Episode,
+    isArray: true,
+  })
   episodes: Episode[];
 
   @Expose()
-  @ApiProperty()
+  @ApiPropertyOptional({ description: 'The home planet of the character' })
   planet?: string;
 
-  @ApiProperty()
+  @Expose()
+  @ApiProperty({ description: 'The date the character was created' })
   createdAt: Date;
 
-  @ApiProperty()
+  @Expose()
+  @ApiProperty({ description: 'The date the character was last updated' })
   updatedAt: Date;
 }
